@@ -22,11 +22,17 @@ func main() {
 
 	cmds := commands.GetCommands()
 	cmds.Register("login", commands.LoginHandler)
+	cmds.Register("register", commands.RegisterHandler)
 
 	var cliCommand commands.Command
 	switch len(os.Args) {
-	case 1, 2:
+	case 1:
 		log.Fatal("not enough arguments were provided")
+	case 2:
+		cliCommand = commands.Command{
+			Name:      os.Args[1],
+			Arguments: []string{},
+		}
 	default:
 		cliCommand = commands.Command{
 			Name:      os.Args[1],

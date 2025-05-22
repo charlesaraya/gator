@@ -1,11 +1,14 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/charlesaraya/gator/internal/config"
 	"github.com/charlesaraya/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 type State struct {
@@ -50,9 +53,36 @@ func LoginHandler(s *State, cmd Command) error {
 	}
 	userName := cmd.Arguments[0]
 
+	_, err := s.Db.GetUser(context.Background(), userName)
+	if err != nil {
+		return err
+	}
+
 	if err := s.Config.SetUser(userName); err != nil {
 		return err
 	}
 	log.Printf("Login: %s", userName)
+	return nil
+}
+
+func RegisterHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 1 {
+		return fmt.Errorf("%s called with no arguments", cmd.Name)
+	}
+	userName := cmd.Arguments[0]
+	userParams := database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      userName,
+	}
+	user, err := s.Db.CreateUser(context.Background(), userParams)
+	if err != nil {
+		return err
+	}
+	if err = s.Config.SetUser(userName); err != nil {
+		return err
+	}
+	log.Printf("Register: %s(%s)", user.Name, user.ID.String())
 	return nil
 }
