@@ -131,3 +131,31 @@ func AggregateFeedHandler(s *State, cmd Command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func AddFeedHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) < 2 {
+		return fmt.Errorf("%s called with not enough arguments", cmd.Name)
+	}
+	feedName := cmd.Arguments[0]
+	feedUrl := cmd.Arguments[1]
+
+	user, err := s.Db.GetUser(context.Background(), s.Config.UserName)
+	if err != nil {
+		return err
+	}
+	feedParams := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      feedName,
+		Url:       feedUrl,
+		UserID:    user.ID,
+	}
+	feed, err := s.Db.CreateFeed(context.Background(), feedParams)
+	if err != nil {
+		return err
+	}
+	fmt.Println(feed)
+	log.Printf("Add Feed: %s(%s)", feedName, feedUrl)
+	return nil
+}
