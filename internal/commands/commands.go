@@ -104,3 +104,15 @@ func UsersHandler(s *State, cmd Command) error {
 	}
 	return nil
 }
+
+func ResetHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 0 {
+		return fmt.Errorf("%s called with arguments", cmd.Name)
+	}
+	err := s.Db.DeleteUsers(context.Background())
+	if err != nil {
+		return err
+	}
+	log.Printf("Reset")
+	return nil
+}
