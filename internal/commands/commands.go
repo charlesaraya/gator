@@ -8,6 +8,7 @@ import (
 
 	"github.com/charlesaraya/gator/internal/config"
 	"github.com/charlesaraya/gator/internal/database"
+	"github.com/charlesaraya/gator/internal/rss"
 	"github.com/google/uuid"
 )
 
@@ -114,5 +115,19 @@ func ResetHandler(s *State, cmd Command) error {
 		return err
 	}
 	log.Printf("Reset")
+	return nil
+}
+
+func AggregateFeedHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 1 {
+		return fmt.Errorf("%s called no arguments", cmd.Name)
+	}
+	feedUrl := cmd.Arguments[0]
+	feed, err := rss.FetchFeed(context.Background(), feedUrl)
+	if err != nil {
+		return err
+	}
+	log.Printf("Aggregate: %s", feedUrl)
+	fmt.Println(feed)
 	return nil
 }
