@@ -29,6 +29,8 @@ func main() {
 	cmds.Register("addfeed", commands.AddFeedHandler)
 	cmds.Register("delfeed", commands.DeleteFeedHandler)
 	cmds.Register("feeds", commands.FeedsHandler)
+	cmds.Register("follow", commands.FollowFeedsHandler)
+	cmds.Register("following", commands.FollowedFeedsHandler)
 
 	var cliCommand commands.Command
 	switch len(os.Args) {

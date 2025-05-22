@@ -5,6 +5,10 @@ VALUES (
 )
 RETURNING *;
 
+-- name: GetFeed :one
+SELECT * FROM feeds
+WHERE url = $1;
+
 -- name: GetUserFeeds :many
 SELECT f.id, f.created_at, f.updated_at, f.name, f.url, u.name AS user_name
 FROM feeds AS f

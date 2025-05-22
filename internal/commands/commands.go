@@ -155,8 +155,19 @@ func AddFeedHandler(s *State, cmd Command) error {
 	if err != nil {
 		return err
 	}
+	feedFollowParams := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+	_, err = s.Db.CreateFeedFollow(context.Background(), feedFollowParams)
+	if err != nil {
+		return err
+	}
 	fmt.Println(feed)
-	log.Printf("Add Feed: %s(%s)", feedName, feedUrl)
+	log.Printf("Add Feed: '%s' added '%s' (%s)", user.Name, feedName, feedUrl)
 	return nil
 }
 
@@ -186,5 +197,52 @@ func FeedsHandler(s *State, cmd Command) error {
 		fmt.Printf("* %s(%s) from %s\n", feed.Name, feed.Url, feed.UserName)
 	}
 	log.Printf("Feeds: %v feeds", len(feeds))
+	return nil
+}
+
+func FollowFeedsHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 1 {
+		return fmt.Errorf("%s called with no arguments", cmd.Name)
+	}
+	user, err := s.Db.GetUser(context.Background(), s.Config.UserName)
+	if err != nil {
+		return err
+	}
+	feedUrl := cmd.Arguments[0]
+	feed, err := s.Db.GetFeed(context.Background(), feedUrl)
+	if err != nil {
+		return err
+	}
+	feedFollowParams := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+	feed_follow, err := s.Db.CreateFeedFollow(context.Background(), feedFollowParams)
+	if err != nil {
+		return err
+	}
+	log.Printf("Follow: '%s' followed '%s' feed\n", feed_follow.UserName, feed_follow.FeedName)
+	return nil
+}
+
+func FollowedFeedsHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 0 {
+		return fmt.Errorf("%s called with arguments", cmd.Name)
+	}
+	user, err := s.Db.GetUser(context.Background(), s.Config.UserName)
+	if err != nil {
+		return err
+	}
+	feeds, err := s.Db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return err
+	}
+	for _, feed := range feeds {
+		fmt.Printf("* %s follows %s\n", user.Name, feed.FeedName)
+	}
+	log.Printf("Follows: %s follows %v feeds\n", user.Name, len(feeds))
 	return nil
 }
