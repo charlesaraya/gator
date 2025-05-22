@@ -86,3 +86,21 @@ func RegisterHandler(s *State, cmd Command) error {
 	log.Printf("Register: %s(%s)", user.Name, user.ID.String())
 	return nil
 }
+
+func UsersHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 0 {
+		return fmt.Errorf("%s called with arguments", cmd.Name)
+	}
+	users, err := s.Db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+	for _, user := range users {
+		if user.Name == s.Config.UserName {
+			fmt.Printf("* %s (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %s\n", user.Name)
+		}
+	}
+	return nil
+}

@@ -23,6 +23,7 @@ func main() {
 	cmds := commands.GetCommands()
 	cmds.Register("login", commands.LoginHandler)
 	cmds.Register("register", commands.RegisterHandler)
+	cmds.Register("users", commands.UsersHandler)
 
 	var cliCommand commands.Command
 	switch len(os.Args) {
