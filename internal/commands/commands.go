@@ -160,6 +160,19 @@ func AddFeedHandler(s *State, cmd Command) error {
 	return nil
 }
 
+func DeleteFeedHandler(s *State, cmd Command) error {
+	if len(cmd.Arguments) != 1 {
+		return fmt.Errorf("%s called with no arguments", cmd.Name)
+	}
+	feedUrl := cmd.Arguments[0]
+	err := s.Db.DeleteFeed(context.Background(), feedUrl)
+	if err != nil {
+		return err
+	}
+	log.Printf("Delete Feed: %s", feedUrl)
+	return nil
+}
+
 func FeedsHandler(s *State, cmd Command) error {
 	if len(cmd.Arguments) != 0 {
 		return fmt.Errorf("%s called with arguments", cmd.Name)

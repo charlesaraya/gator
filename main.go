@@ -27,6 +27,7 @@ func main() {
 	cmds.Register("reset", commands.ResetHandler)
 	cmds.Register("agg", commands.AggregateFeedHandler)
 	cmds.Register("addfeed", commands.AddFeedHandler)
+	cmds.Register("delfeed", commands.DeleteFeedHandler)
 	cmds.Register("feeds", commands.FeedsHandler)
 
 	var cliCommand commands.Command

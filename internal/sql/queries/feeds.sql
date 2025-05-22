@@ -9,3 +9,7 @@ RETURNING *;
 SELECT f.id, f.created_at, f.updated_at, f.name, f.url, u.name AS user_name
 FROM feeds AS f
 JOIN users AS u ON f.user_id = u.id;
+
+-- name: DeleteFeed :exec
+DELETE FROM feeds
+WHERE url=$1;
