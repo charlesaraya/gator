@@ -132,17 +132,12 @@ func AggregateFeedHandler(s *State, cmd Command) error {
 	return nil
 }
 
-func AddFeedHandler(s *State, cmd Command) error {
+func AddFeedHandler(s *State, cmd Command, user database.User) error {
 	if len(cmd.Arguments) < 2 {
 		return fmt.Errorf("%s called with not enough arguments", cmd.Name)
 	}
 	feedName := cmd.Arguments[0]
 	feedUrl := cmd.Arguments[1]
-
-	user, err := s.Db.GetUser(context.Background(), s.Config.UserName)
-	if err != nil {
-		return err
-	}
 	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -200,13 +195,9 @@ func FeedsHandler(s *State, cmd Command) error {
 	return nil
 }
 
-func FollowFeedsHandler(s *State, cmd Command) error {
+func FollowFeedsHandler(s *State, cmd Command, user database.User) error {
 	if len(cmd.Arguments) != 1 {
 		return fmt.Errorf("%s called with no arguments", cmd.Name)
-	}
-	user, err := s.Db.GetUser(context.Background(), s.Config.UserName)
-	if err != nil {
-		return err
 	}
 	feedUrl := cmd.Arguments[0]
 	feed, err := s.Db.GetFeed(context.Background(), feedUrl)
@@ -228,13 +219,9 @@ func FollowFeedsHandler(s *State, cmd Command) error {
 	return nil
 }
 
-func FollowedFeedsHandler(s *State, cmd Command) error {
+func FollowedFeedsHandler(s *State, cmd Command, user database.User) error {
 	if len(cmd.Arguments) != 0 {
 		return fmt.Errorf("%s called with arguments", cmd.Name)
-	}
-	user, err := s.Db.GetUser(context.Background(), s.Config.UserName)
-	if err != nil {
-		return err
 	}
 	feeds, err := s.Db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
