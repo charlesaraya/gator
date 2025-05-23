@@ -26,11 +26,12 @@ func main() {
 	cmds.Register("users", commands.UsersHandler)
 	cmds.Register("reset", commands.ResetHandler)
 	cmds.Register("agg", commands.AggregateFeedHandler)
-	cmds.Register("addfeed", commands.AddFeedHandler)
+	cmds.Register("addfeed", commands.LoggedInMiddleware(commands.AddFeedHandler))
 	cmds.Register("delfeed", commands.DeleteFeedHandler)
 	cmds.Register("feeds", commands.FeedsHandler)
-	cmds.Register("follow", commands.FollowFeedsHandler)
-	cmds.Register("following", commands.FollowedFeedsHandler)
+	cmds.Register("follow", commands.LoggedInMiddleware(commands.FollowFeedsHandler))
+	cmds.Register("following", commands.LoggedInMiddleware(commands.FollowedFeedsHandler))
+	cmds.Register("unfollow", commands.LoggedInMiddleware(commands.UnFollowFeedHandler))
 
 	var cliCommand commands.Command
 	switch len(os.Args) {

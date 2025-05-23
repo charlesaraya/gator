@@ -233,3 +233,20 @@ func FollowedFeedsHandler(s *State, cmd Command, user database.User) error {
 	log.Printf("Follows: %s follows %v feeds\n", user.Name, len(feeds))
 	return nil
 }
+
+func UnFollowFeedHandler(s *State, cmd Command, user database.User) error {
+	if len(cmd.Arguments) != 1 {
+		return fmt.Errorf("%s called with not enough arguments", cmd.Name)
+	}
+	feedUrl := cmd.Arguments[0]
+	params := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		Url:    feedUrl,
+	}
+	_, err := s.Db.DeleteFeedFollow(context.Background(), params)
+	if err != nil {
+		return err
+	}
+	log.Printf("Unfollow '%s' unfollowed '%s'\n", user.Name, feedUrl)
+	return nil
+}
