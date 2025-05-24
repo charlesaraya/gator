@@ -6,6 +6,7 @@ import (
 
 	"github.com/charlesaraya/gator/internal/commands"
 	"github.com/charlesaraya/gator/internal/config"
+	"github.com/charlesaraya/gator/internal/database"
 )
 
 func main() {
@@ -13,11 +14,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("reading config file failed, %s", err.Error())
 	}
-	state := commands.GetState()
-	state.Config = &cfg
-	state.Db, err = config.LoadDB(&cfg)
+	db, err := config.LoadDB(&cfg)
 	if err != nil {
 		log.Fatalf("loading DB failed, %s", err.Error())
+	}
+	defer db.Close()
+	state := commands.State{
+		Db:     database.New(db),
+		Config: &cfg,
 	}
 
 	cmds := commands.GetCommands()
@@ -37,6 +41,7 @@ func main() {
 	switch len(os.Args) {
 	case 1:
 		log.Fatal("not enough arguments were provided")
+		log.Fatal("Usage: cli <command> [args...]")
 	case 2:
 		cliCommand = commands.Command{
 			Name:      os.Args[1],

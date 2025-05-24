@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/charlesaraya/gator/internal/database"
 	_ "github.com/lib/pq"
 )
 
@@ -60,10 +59,10 @@ func Read() (Config, error) {
 	return config, nil
 }
 
-func LoadDB(cfg *Config) (*database.Queries, error) {
+func LoadDB(cfg *Config) (*sql.DB, error) {
 	db, err := sql.Open("postgres", cfg.DBUrl)
 	if err != nil {
 		return nil, err
 	}
-	return database.New(db), nil
+	return db, nil
 }

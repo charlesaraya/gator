@@ -38,10 +38,6 @@ func (c *Commands) Register(name string, f func(*State, Command) error) error {
 	return nil
 }
 
-func GetState() State {
-	return State{}
-}
-
 func GetCommands() Commands {
 	return Commands{
 		CommandRegistry: make(map[string]func(*State, Command) error),
