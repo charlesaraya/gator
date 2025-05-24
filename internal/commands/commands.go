@@ -122,13 +122,35 @@ func AggregateFeedHandler(s *State, cmd Command) error {
 	if len(cmd.Arguments) != 1 {
 		return fmt.Errorf("%s called no arguments", cmd.Name)
 	}
-	feedUrl := cmd.Arguments[0]
-	feed, err := rss.FetchFeed(context.Background(), feedUrl)
+	timeBetweenRequests, err := time.ParseDuration(cmd.Arguments[0])
 	if err != nil {
 		return err
 	}
-	log.Printf("Aggregate: %s", feedUrl)
-	fmt.Println(feed)
+	log.Printf("Aggregate Feed: collecting feeds every %v\n", timeBetweenRequests)
+	ticker := time.NewTicker(timeBetweenRequests)
+	for ; ; <-ticker.C {
+		if err = scrapeFeeds(s); err != nil {
+			return err
+		}
+	}
+}
+
+func scrapeFeeds(s *State) error {
+	feed, err := s.Db.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return err
+	}
+	fetchedFeed, err := rss.FetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return err
+	}
+	if err = s.Db.MarkFeedFetched(context.Background(), feed.ID); err != nil {
+		return err
+	}
+	log.Printf("Fetched: %s (%v items)\n", feed.Name, len(fetchedFeed.Channel.Items))
+	for i, item := range fetchedFeed.Channel.Items {
+		fmt.Printf("\t%d. %s\n", i, item.Title)
+	}
 	return nil
 }
 
