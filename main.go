@@ -36,6 +36,7 @@ func main() {
 	cmds.Register("follow", commands.LoggedInMiddleware(commands.FollowFeedsHandler))
 	cmds.Register("following", commands.LoggedInMiddleware(commands.FollowedFeedsHandler))
 	cmds.Register("unfollow", commands.LoggedInMiddleware(commands.UnFollowFeedHandler))
+	cmds.Register("browse", commands.LoggedInMiddleware(commands.BrowsePostsHandler))
 
 	var cliCommand commands.Command
 	switch len(os.Args) {

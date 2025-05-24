@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const defaultBrowseLimit int32 = 2
+
 type State struct {
 	Config *config.Config
 	Db     *database.Queries
@@ -150,7 +152,23 @@ func scrapeFeeds(s *State) error {
 	}
 	log.Printf("Fetched: %s (%v items)\n", feed.Name, len(fetchedFeed.Channel.Items))
 	for i, item := range fetchedFeed.Channel.Items {
-		fmt.Printf("\t%d. %s\n", i, item.Title)
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			continue
+		}
+		params := database.CreatePostParams{
+			FeedID:      feed.ID,
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: item.Description,
+			PublishedAt: pubDate,
+		}
+		post, err := s.Db.CreatePost(context.Background(), params)
+		if err != nil {
+			return fmt.Errorf("failed to create post: %w", err)
+		}
+		fmt.Printf("\t%d. %s\n", i, post.Title)
+		fmt.Printf("\t\t %s\n", item.Description)
 	}
 	return nil
 }
@@ -270,5 +288,28 @@ func UnFollowFeedHandler(s *State, cmd Command, user database.User) error {
 		return fmt.Errorf("failed to delete feed: %w", err)
 	}
 	log.Printf("Unfollow '%s' unfollowed '%s'\n", user.Name, feedUrl)
+	return nil
+}
+
+func BrowsePostsHandler(s *State, cmd Command, user database.User) error {
+	if len(cmd.Arguments) > 1 {
+		return fmt.Errorf("incorrect command usage. use: %s [limit]", cmd.Name)
+	}
+	params := database.GetPostsFromUserParams{
+		UserID: user.ID,
+	}
+	if len(cmd.Arguments) == 0 {
+		params.Limit = defaultBrowseLimit
+	}
+	posts, err := s.Db.GetPostsFromUser(context.Background(), params)
+	if err != nil {
+		return fmt.Errorf("failed to get posts from user: %w", err)
+	}
+	for _, post := range posts {
+		fmt.Printf("%s (%v)\n", post.Title, post.PublishedAt.Format(time.DateTime))
+		fmt.Println("-----------------------------------------")
+		fmt.Printf("%v\n", post.Description)
+		fmt.Println("=========================================")
+	}
 	return nil
 }
